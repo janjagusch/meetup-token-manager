@@ -1,0 +1,9 @@
+#!/bin/bash
+#
+# This script installs the virtual environment as a kernel into Jupyter.
+
+poetry run python \
+	-m ipykernel install \
+	--user \
+	--name meetup-api-access-token-manager \
+	--display-name "Python (meetup-api-access-token-manager)"
