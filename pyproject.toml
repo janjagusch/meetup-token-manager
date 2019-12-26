@@ -1,22 +1,26 @@
 [tool.poetry]
-name = "meetup-api-access-token-manager"
+name = "meetup-token-manager"
 version = "0.1.0"
 description = "Manages access tokens for the Meetup API."
 authors = ["Jan-Benedikt Jagusch <jan.jagusch@gmail.com>"]
+repository = "https://github.com/janjagusch/meetup-token-manager"
 license = "MIT"
 
 [tool.poetry.dependencies]
 python = "^3.6"
+redis = "^3.3"
 requests = "^2.22"
-pyyaml = "^5.1"
 
 [tool.poetry.dev-dependencies]
-black = {version="==19.10b0", allows-prereleases=true}
-ipykernel = "^5.1"
-pylint = "^2.3"
-pytest = "^4.6"
-tox = "^3.12"
+black = {version="19.10b0", allow-prereleases=true}
+codecov = "^2.0"
+ipykernel = "^5"
+pylint = "^2"
+pytest = "^5"
+pytest-cov = "^2.8"
+pytest-vcr = "^1.0"
 python-dotenv = "^0.10.3"
+tox = "^3"
 
 [build-system]
 requires = ["poetry>=0.12"]

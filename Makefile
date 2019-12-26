@@ -1,11 +1,3 @@
-PYLINTRC_URL:=https://gitlab.com/InstaffoOpenSource/pylintrc/raw/master/.pylintrc
-
-	
-## downloading pylintrc
-pylintrc_download:
-	@echo "Downloading .pylintrc ..."
-	@bin/download_pylintrc
-
 ## deleting all Python garbage
 clean:
 	@echo "Cleaning up ..."
@@ -29,6 +21,9 @@ format_black: test_missing_init
 	@echo "Black formatting ..."
 	@poetry run black .
 
+## formatting
+format: format_black
+
 ## black linting
 lint_black: test_missing_init
 	@echo "Black linting ..."
@@ -37,7 +32,7 @@ lint_black: test_missing_init
 ## pylint linting
 lint_pylint: test_missing_init
 	@echo "Pylint linting ..."
-	@poetry run pylint network_visualization
+	@poetry run pylint meetup
 	@poetry run pylint $$(find tests/ -iname "*.py")
 
 ## linting

@@ -5,5 +5,5 @@
 poetry run python \
 	-m ipykernel install \
 	--user \
-	--name meetup-api-access-token-manager \
-	--display-name "Python (meetup-api-access-token-manager)"
+	--name meetup-token-manager \
+	--display-name "Python (meetup-token-manager)"
