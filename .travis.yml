@@ -19,7 +19,7 @@ before_install:
   - source $HOME/.poetry/env
 
 install:
-  - poetry config settings.virtualenvs.in-project true
+  - poetry config virtualenvs.in-project true
   - poetry install -v
 
 jobs:
