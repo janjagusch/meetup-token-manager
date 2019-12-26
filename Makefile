@@ -16,6 +16,9 @@ test_tox: test_missing_init
 	@echo "Tox testing ..."
 	@poetry run tox
 
+## testing
+test: test_tox
+
 ## black formatting
 format_black: test_missing_init
 	@echo "Black formatting ..."

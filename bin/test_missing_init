@@ -9,8 +9,6 @@ class MissingInitError(Exception):
 	file is missing.
 	"""
 
-    pass
-
 
 def find_missing_init(file_path):
     """
