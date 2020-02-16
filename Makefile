@@ -15,6 +15,16 @@ test_tox: test_missing_init
 
 test: test_tox clean
 
+VOLUME ?= "meetup-token-cache-test"
+NAME ?= "meetup-token-cache-test-redis"
+test_redis:
+	@echo "Testing with redis Docker container ..."
+	@make docker_redis
+	@make test; EXIT_CODE=$$(echo $$?)
+	@docker container stop $(NAME)
+	@docker container rm $(NAME)
+	@exit $(EXIT_CODE)
+
 format_black: test_missing_init
 	@echo "Black formatting ..."
 	@poetry run black .
@@ -33,10 +43,10 @@ lint_pylint: test_missing_init
 lint: lint_black lint_pylint clean
 
 docker_redis_volume:
-	@bin/docker_redis_volume
+	@bin/docker_redis_volume $(VOLUME)
 
 docker_redis: docker_redis_volume
-	@docker run -d -p 6379:6379 -v meetup-tokens:/data redis
+	@docker run -d -p 6379:6379 -v $(VOLUME):/data --name=$(NAME) redis
 
 jupyter_install_kernel:
 	@bin/jupyter_install_kernel

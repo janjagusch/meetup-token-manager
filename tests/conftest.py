@@ -2,6 +2,8 @@
 Helper methods for the tests.
 """
 
+import gzip
+import json
 import os
 import time
 
@@ -17,14 +19,24 @@ from meetup.token_client import TokenClient
 load_dotenv()
 
 
-@pytest.fixture(scope="module")
-def vcr_config():
+def scrub_access_token():
     """
-    vcr_config.
+    Removes the confidential properties from a token response.
     """
-    return {
-        "filter_headers": [("Authorization", "XXX")],
-    }
+
+    def before_record_response(response):
+        token = {
+            "access_token": "ACCESS_TOKEN",
+            "refresh_token": "REFRESH_TOKEN",
+            "token_type": "bearer",
+            "expires_in": 3600,
+        }
+
+        response["body"]["string"] = gzip.compress(json.dumps(token).encode())
+
+        return response
+
+    return before_record_response
 
 
 @pytest.fixture(name="vcr", scope="module")
@@ -33,9 +45,13 @@ def vcr_(vcr):
     vcr.
     """
     vcr.filter_post_data_parameters = [
-        ("refresh_token", "secret"),
+        ("client_id", "CLIENT_ID"),
+        ("client_secret", "CLIENT_SECRET"),
+        ("redirect_uri", "REDIRECT_URI"),
+        ("code", "CODE"),
     ]
-    vcr.match_on = ["method", "scheme", "port", "path", "body", "query"]
+    vcr.before_record_response = scrub_access_token()
+    vcr.match_on = ["port", "path", "body", "query"]
     return vcr
 
 
@@ -44,7 +60,7 @@ def client_id_():
     """
     client_id.
     """
-    return os.environ["CLIENT_ID"]
+    return os.environ.get("CLIENT_ID", "CLIENT_ID")
 
 
 @pytest.fixture(name="client_secret")
@@ -52,7 +68,7 @@ def client_secret_():
     """
     client_secret.
     """
-    return os.environ["CLIENT_SECRET"]
+    return os.environ.get("CLIENT_SECRET", "CLIENT_SECRET")
 
 
 @pytest.fixture(name="redirect_uri")
@@ -60,7 +76,15 @@ def redirect_uri_():
     """
     redirect_uri.
     """
-    return os.environ["REDIRECT_URI"]
+    return os.environ.get("REDIRECT_URI", "REDIRECT_URI")
+
+
+@pytest.fixture(name="code")
+def code_():
+    """
+    code.
+    """
+    return os.environ.get("CODE", "CODE")
 
 
 @pytest.fixture(name="redis_client")
@@ -87,19 +111,17 @@ def token_cache_(client_id, client_secret, redirect_uri, redis_client):
     )
 
 
-@pytest.fixture
-def make_token_client(client_id, client_secret, redirect_uri, redis_client):
-    TOKEN_CLIENT_DEFAULTS = {
-        "client_id": client_id,
-        "client_secret": client_secret,
-        "redirect_uri": redirect_uri,
-        "redis_client": redis_client,
-    }
-
-    def _make_token_client(**kwargs):
-        return TokenClient(**{**TOKEN_CLIENT_DEFAULTS, **kwargs})
-
-    return _make_token_client
+@pytest.fixture(name="token_client", scope="function")
+def token_client_(client_id, client_secret, redirect_uri, redis_client):
+    """
+    make_token_client.
+    """
+    return TokenClient(
+        client_id=client_id,
+        client_secret=client_secret,
+        redirect_uri=redirect_uri,
+        redis_client=redis_client,
+    )
 
 
 @pytest.fixture(name="cache_key")
@@ -112,49 +134,52 @@ def cache_key_(client_id):
 
 @pytest.fixture(name="access_token")
 def access_token_():
-    return "access token"
+    """
+    access_token.
+    """
+    return os.environ.get("ACCESS_TOKEN", "ACCESS_TOKEN")
 
 
 @pytest.fixture(name="token_type")
 def token_type_():
-    return "bearer"
+    """
+    token_type.
+    """
+    return os.environ.get("TOKEN_TYPE", "bearer")
 
 
 @pytest.fixture(name="refresh_token")
 def refresh_token_():
-    return "refresh token"
+    """
+    refresh_token.
+    """
+    return os.environ.get("REFRESH_TOKEN", "REFRESH_TOKEN")
 
 
 @pytest.fixture(name="expires_in")
 def expires_in_():
-    return 3600
+    """
+    expires_in.
+    """
+    return os.environ.get("EXPIRES_IN", 3600)
 
 
 @pytest.fixture(name="expires_at")
 def expires_at_(expires_in):
+    """
+    expires_at.
+    """
     return int(time.time()) + expires_in
 
 
 @pytest.fixture(name="token")
 def token_(access_token, token_type, refresh_token, expires_at):
+    """
+    token.
+    """
     return Token(
         access_token=access_token,
         token_type=token_type,
         refresh_token=refresh_token,
         expires_at=expires_at,
     )
-
-
-@pytest.fixture
-def make_token(access_token, token_type, refresh_token, expires_at):
-    TOKEN_DEFAULTS = {
-        "access_token": access_token,
-        "token_type": token_type,
-        "refresh_token": refresh_token,
-        "expires_at": expires_at,
-    }
-
-    def _make_token(**kwargs):
-        return Token(**{**TOKEN_DEFAULTS, **kwargs})
-
-    return _make_token

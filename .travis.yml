@@ -5,16 +5,19 @@ dist: xenial
 stages:
   - lint
   - test
-  - name: deploy
+  - name: rawelease
     if: tag IS present
 
 cache:
   paths:
     - .venv
 
+services:
+  - redis-server
+
 before_install:
   - bin/check_version
-  - export POETRY_VERSION="1.0.0"
+  - export POETRY_VERSION="1.0.3"
   - curl -sSL https://raw.githubusercontent.com/sdispater/poetry/master/get-poetry.py | python
   - source $HOME/.poetry/env
 
@@ -34,16 +37,16 @@ jobs:
       script:
         - poetry run pytest --cov=meetup --cov-report term-missing tests/
         - poetry run codecov
-    - stage: deploy
+    - stage: release
       script:
         - echo Deploying to PyPI...
 
-before_deploy:
+before_release:
   - bin/check_release
   - poetry config http-basic.pypi $PYPI_USERNAME $PYPI_PASSWORD
   - poetry build -f sdist
 
-deploy:
+release:
   provider: script
   script: poetry publish
   skip_cleanup: true

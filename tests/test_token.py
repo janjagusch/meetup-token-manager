@@ -11,6 +11,9 @@ from meetup.token import Token
 
 @pytest.fixture(name="token_from_cache")
 def token_from_cache_(access_token, token_type, refresh_token, expires_at):
+    """
+    Token from Redis cache.
+    """
     return {
         "access_token": access_token,
         "token_type": token_type,
@@ -21,6 +24,9 @@ def token_from_cache_(access_token, token_type, refresh_token, expires_at):
 
 @pytest.fixture(name="token_from_api")
 def token_from_api_(access_token, token_type, refresh_token, expires_in):
+    """
+    Token from api.
+    """
     return {
         "access_token": access_token,
         "token_type": token_type,
