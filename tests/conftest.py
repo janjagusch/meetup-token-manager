@@ -51,7 +51,7 @@ def vcr_(vcr):
         ("code", "CODE"),
     ]
     vcr.before_record_response = scrub_access_token()
-    vcr.match_on = ["port", "path", "body", "query"]
+    vcr.match_on = ["method", "scheme", "port", "path"]
     return vcr
 
 
