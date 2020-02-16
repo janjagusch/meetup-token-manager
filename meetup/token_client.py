@@ -1,17 +1,21 @@
 """
-This module contains the TokenManager class.
+This module contains the TokenClient class.
 """
+
+import logging
 
 import requests
 
 from .token import Token
 
 
-class TokenManager:
+class TokenClient:
 
     """
-    Manages access tokens for the Meetup API.
-    Can refresh and create new tokens and reads from and write into Redis.
+    TokenClient
+
+    Retrieve OAuth 2.0 tokens from the token endpoint and from the redis cache.
+    Persist tokens into the Redis cache.
 
     Args:
         client_id (str): The client id.
@@ -39,9 +43,9 @@ class TokenManager:
 
         Returns:
             str: A cache key in the format
-                `oauth_token_cache__<client_id>_<redirect_uri>`
+                `oauth_token_cache__<client_id>`
         """
-        return f"oauth_token_cache__{self.client_id}_{self.redirect_uri}"
+        return f"oauth_token_cache__{self.client_id}"
 
     def cached_token(self):
         """
@@ -51,24 +55,26 @@ class TokenManager:
             None: Returns `None` in case of a cache miss
             Token: Returns a Token instance
         """
+        logging.info("Retrieving token from Redis cache.")
         cached_token = self.redis_client.hgetall(self.cache_key)
 
         if not cached_token:
+            logging.warning("No cached token found.")
             return None
 
         return Token.from_cache(cached_token)
 
     def cache_token(self, token):
         """
-        Persist a Token instance in redis.
+        Persist a token in redis.
 
         Args:
-            token (Token): The token to persist.
+            token (.token.Token): The token to persist.
 
         Returns:
-            Token: The persisted token.
+            .token.Token: The persisted token.
         """
-
+        logging.info("Persisting Token in Redis cache.")
         self.redis_client.hmset(self.cache_key, token)
 
         return token
@@ -96,14 +102,21 @@ class TokenManager:
         )
 
         if create:
+            logging.info("Creating new token from API.")
             data["code"] = code
         else:
+            logging.info("Refreshing token from API.")
             data["refresh_token"] = self.cached_token().refresh_token
 
+        logging.debug(f"Request data: {data}")
         response = requests.post(url=url, data=data)
         response.raise_for_status()
+
+        logging.debug(f"Response status code: {response.status_code}")
+        logging.debug(f"Response url: {response.url}")
+        logging.debug(f"Response body: {response.json()}")
         response = response.json()
 
-        token = Token.from_api(**response)
+        token = Token.from_api(response)
 
         return self.cache_token(token)

@@ -1,0 +1,71 @@
+interactions:
+- request:
+    body: redirect_uri=http%3A%2F%2Flocalhost%3A5000&grant_type=refresh_token&refresh_token=REFRESH_TOKEN
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '173'
+      Content-Type:
+      - application/x-www-form-urlencoded
+      User-Agent:
+      - python-requests/2.22.0
+    method: POST
+    uri: https://secure.meetup.com/oauth2/access
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAAyXLSwqAMAwFwKuUrD2B93Bdio0aWpLy+hER767g7OcmBgw+cl0hpYkpzbRoUjvV
+        GVwBD7Fe8+V65ejAG7gevllipenvXxEdIUv0O4I2el5++0UNWAAAAA==
+    headers:
+      Accept-Ranges:
+      - bytes
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Language:
+      - en-US
+      Content-Length:
+      - '97'
+      Content-Type:
+      - application/json;charset=UTF-8
+      Date:
+      - Fri, 27 Dec 2019 11:38:08 GMT
+      Server:
+      - Apache-Coyote/1.1
+      Set-Cookie:
+      - MEETUP_MEMBER="id=0&status=1&timestamp=1577446688&bs=0&tz=US%2FEastern&zip=&country=us&city=&state=&lat=0.0&lon=0.0&ql=false&s=f55a9a0d99abbff0d103fed7d61c8a7321341eeb&scope=ALL";
+        Version=1; Domain=.meetup.com; Path=/; Secure; HttpOnly
+      - memberId=0; Domain=.meetup.com; Path=/; Secure
+      - gaEncryptedMemberId=""; Domain=.meetup.com; Expires=Thu, 01-Jan-1970 00:00:10
+        GMT; Path=/; Secure
+      - memberId=""; Domain=.meetup.com; Expires=Thu, 01-Jan-1970 00:00:10 GMT; Path=/;
+        Secure
+      - MEETUP_AFFIL="affil=meetup"; Version=1; Domain=.meetup.com; Max-Age=3888000;
+        Expires=Mon, 10-Feb-2020 11:38:08 GMT; Path=/; HttpOnly
+      - MEETUP_TRACK="id=4d8a66c5-54b6-4b51-94c7-2adf67af3504&l=0&s=5265d1f34b753d1bfa72b6636fb7a8cad50c27ae";
+        Version=1; Domain=.meetup.com; Max-Age=630720000; Expires=Thu, 22-Dec-2039
+        11:38:08 GMT; Path=/; HttpOnly
+      - MEETUP_CSRF=058709bc-0d45-4d17-9d4b-8883d8384cf2; Domain=.meetup.com; Expires=Sun,
+        26-Jan-2020 11:38:08 GMT; Path=/; Secure
+      Vary:
+      - Accept-Encoding,User-Agent,Accept-Language
+      Via:
+      - 1.1 varnish
+      X-Cache:
+      - MISS
+      X-Cache-Hits:
+      - '0'
+      X-Served-By:
+      - cache-hhn4030-HHN
+      X-Timer:
+      - S1577446689.791396,VS0,VE126
+    status:
+      code: 400
+      message: Bad Request
+version: 1

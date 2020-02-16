@@ -25,42 +25,36 @@ class Token(dict):
         self["expires_at"] = expires_at
 
     @classmethod
-    def from_api(cls, *, access_token, token_type, refresh_token, expires_in):
+    def from_api(cls, token_from_api):
         """
         Initializes a fresh token from the API.
 
         Args:
-            access_token (str): The access token.
-            expires_in (int): Total number of seconds until token will expire. This
-                assumes that the token has been created now.
-            token_type (str): The token type.
-            refresh_token (str): The refresh token.
+            token_from_api (dict): The token from the API.
 
         Returns:
             Token: An instance of Token.
         """
-        expires_at = int(time.time()) + expires_in
-
-        return cls(
-            access_token=access_token,
-            expires_at=expires_at,
-            token_type=token_type,
-            refresh_token=refresh_token,
+        token_from_api["expires_at"] = int(time.time()) + int(
+            token_from_api["expires_in"]
         )
+        token_from_api.pop("expires_in")
+
+        return cls(**token_from_api)
 
     @classmethod
-    def from_cache(cls, cached_token):
+    def from_cache(cls, token_from_cache):
         """
         Initializes a cached token from Redis.
 
         Args:
-            cached_token (dict): The cached token.
+            token_from_cache (dict): The cached token.
 
         Returns:
             Token: An instance of Token.
         """
-        cached_token["expires_at"] = int(cached_token["expires_at"])
-        return cls(**cached_token)
+        token_from_cache["expires_at"] = int(token_from_cache["expires_at"])
+        return cls(**token_from_cache)
 
     @property
     def access_token(self):
@@ -102,4 +96,4 @@ class Token(dict):
         """
         Checks whether or not the access token has expired.
         """
-        return int(time.time()) > self.expires_at
+        return self.expires_in <= 0

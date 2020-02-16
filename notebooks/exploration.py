@@ -8,13 +8,16 @@
 #       format_version: '1.5'
 #       jupytext_version: 1.3.0
 #   kernelspec:
-#     display_name: Python (meetup-token-manager)
+#     display_name: Python (meetup-token-cache)
 #     language: python
-#     name: meetup-token-manager
+#     name: meetup-token-cache
 # ---
 
+import logging
 import os
 import sys
+
+logging.basicConfig(level=logging.DEBUG)
 
 sys.path.append("..")
 
@@ -22,13 +25,9 @@ from redis import Redis
 from dotenv import load_dotenv
 import requests
 
-from meetup import TokenManager
+from meetup import TokenCache
 
 load_dotenv()
-
-MEETUP_API_KEY = os.environ.get("MEETUP_API_KEY")
-MEETUP_API_SECRET = os.environ.get("MEETUP_API_SECRET")
-MEETUP_API_REDIRECT_URI = os.environ.get("MEETUP_API_REDIRECT_URI")
 
 # +
 VALID_SCOPES = [
@@ -62,14 +61,23 @@ def request_authorization_url(key, redirect_uri, scope=None):
 
 # -
 
-redis_client = Redis(host="localhost", port=6379, db=0, decode_responses=True,)
+print(request_authorization_url(os.environ["CLIENT_ID"], os.environ["REDIRECT_URI"]))
 
-token_manager = TokenManager(
-    MEETUP_API_KEY, MEETUP_API_SECRET, MEETUP_API_REDIRECT_URI, redis_client
+code = "ca1915cb04e69295ee99c31548750bd8"
+
+redis_client = Redis.from_url(os.environ["REDIS_URL"])
+
+redis_client.keys()
+
+token_cache = TokenCache(
+    client_id=os.environ["CLIENT_ID"],
+    client_secret=os.environ["CLIENT_SECRET"],
+    redirect_uri=os.environ["REDIRECT_URI"],
+    redis_client=redis_client,
 )
 
-token_manager.cached_token()
+token_cache.token(refresh=True, code=code)
 
-token_manager.fresh_token()
+redis_client.keys()
 
-token_manager.cached_token()
+token_cache.token()
