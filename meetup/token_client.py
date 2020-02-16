@@ -14,102 +14,56 @@ class TokenClient:
     """
     TokenClient
 
-    Retrieve OAuth 2.0 tokens from the token endpoint and from the redis cache.
-    Persist tokens into the Redis cache.
+    Retrieve OAuth 2.0 tokens from the token endpoint.
 
     Args:
         client_id (str): The client id.
         client_secret (str): The client secret.
         redirect_uri (str): The redirect uri.
-        redis_client (redis.Redis): The Redis client.
 
     Attributes:
         client_id (str): The client id.
         client_secret (str): The client secret.
         redirect_uri (str): The redirect uri.
-        redis_client (redis.Redis): The Redis client.
+        _URL (str): The URL to the Meetup API.
     """
 
-    def __init__(self, client_id, client_secret, redirect_uri, redis_client):
+    _URL = "https://secure.meetup.com/oauth2/access"
+
+    def __init__(self, client_id, client_secret, redirect_uri):
         self.client_id = client_id
         self.client_secret = client_secret
         self.redirect_uri = redirect_uri
-        self.redis_client = redis_client
 
-    @property
-    def cache_key(self):
+    def _data(self, grant_type):
         """
-        Return the cache key for the configured client_id and redirect_uri.
-
-        Returns:
-            str: A cache key in the format
-                `oauth_token_cache__<client_id>`
-        """
-        return f"oauth_token_cache__{self.client_id}"
-
-    def cached_token(self):
-        """
-        Try to retrieve a cached token from Redis.
-
-        Returns:
-            None: Returns `None` in case of a cache miss
-            Token: Returns a Token instance
-        """
-        logging.info("Retrieving token from Redis cache.")
-        cached_token = self.redis_client.hgetall(self.cache_key)
-
-        if not cached_token:
-            logging.warning("No cached token found.")
-            return None
-
-        return Token.from_cache(cached_token)
-
-    def cache_token(self, token):
-        """
-        Persist a token in redis.
+        Data for token request against API.
 
         Args:
-            token (.token.Token): The token to persist.
+            grant_type (str): 'refresh_token' or 'create'
 
         Returns:
-            .token.Token: The persisted token.
+            dict: Data for token request.
         """
-        logging.info("Persisting Token in Redis cache.")
-        self.redis_client.hmset(self.cache_key, token)
-
-        return token
-
-    def fresh_token(self, mode="refresh", code=None):
-        """
-        Try to create or refresh a token from the API.
-
-        Args:
-            mode (str): Either 'refresh' or 'create'.
-            code (str, optional): Must be provided if mode is 'create'.
-
-        Returns:
-            Token: The fresh token.
-        """
-        create = mode == "create"
-        url = "https://secure.meetup.com/oauth2/access"
-        grant_type = "authorization_code" if create else "refresh_token"
-
-        data = dict(
+        return dict(
             client_id=self.client_id,
             client_secret=self.client_secret,
             redirect_uri=self.redirect_uri,
             grant_type=grant_type,
         )
 
-        if create:
-            logging.info("Creating new token from API.")
-            data["code"] = code
-        else:
-            logging.info("Refreshing token from API.")
-            data["refresh_token"] = self.cached_token().refresh_token
+    def _request_token(self, data):
+        """
+        Requests a token from the API and stores the result in `self.token`.
 
-        logging.debug(f"Request data: {data}")
-        response = requests.post(url=url, data=data)
+        Args:
+            data (dict): Request post data for the API.
+
+        Returns:
+            Token: An instance of class `Token`.
+
+        """
+        response = requests.post(url=self._URL, data=data)
         response.raise_for_status()
 
         logging.debug(f"Response status code: {response.status_code}")
@@ -117,6 +71,40 @@ class TokenClient:
         logging.debug(f"Response body: {response.json()}")
         response = response.json()
 
-        token = Token.from_api(response)
+        return Token.from_api(response)
 
-        return self.cache_token(token)
+    def refresh_token(self, refresh_token):
+        """
+        Refreshes the token.
+
+        Returns:
+            Token: An instance of class `Token`.
+
+        Raises:
+            NoCachedTokenError: When there is no cached token.
+        """
+        logging.debug("Refreshing token.")
+
+        grant_type = "refresh_token"
+        data = self._data(grant_type)
+        data["refresh_token"] = refresh_token
+
+        return self._request_token(data)
+
+    def create_token(self, code):
+        """
+        Creates a new token.
+
+        Args:
+            code (str): The authorization code.
+
+        Returns:
+            Token: An instance of class `Token`.
+        """
+        logging.debug("Creating token.")
+
+        grant_type = "authorization_code"
+        data = self._data(grant_type)
+        data["code"] = code
+
+        return self._request_token(data)

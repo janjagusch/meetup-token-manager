@@ -61,26 +61,37 @@ def request_authorization_url(key, redirect_uri, scope=None):
 
 # -
 
-import yaml
-
-with open(
-    "../tests/cassettes/TestTokenClient.test_fresh_token_create.yaml"
-) as file_pointer:
-    casette = yaml.full_load(file_pointer)
-
-b = casette["interactions"][0]["response"]["body"]["string"]
-
-import gzip
-
-gzip.decompress(b).decode("utf-8")
-
 print(request_authorization_url(os.environ["CLIENT_ID"], os.environ["REDIRECT_URI"]))
 
-code = "447cac48893fb8922c531c3333be02cc"
+from meetup.token_cache import TokenCache
+
+from meetup.token_client import TokenClient
+
+code = "6159d13981f6b68e413d2f3e8da98e0d"
 
 redis_client = Redis.from_url(
     os.environ.get("REDIS_URL", "redis://@localhost:6379?db=0&decode_responses=True")
 )
+
+token_cache = TokenCache(
+    client_id=os.environ["CLIENT_ID"],
+    client_secret=os.environ["CLIENT_SECRET"],
+    redirect_uri=os.environ["REDIRECT_URI"],
+    redis_client=redis_client,
+)
+
+token_cache.authorize(code)
+
+client = TokenClient(
+    client_id=os.environ["CLIENT_ID"],
+    client_secret=os.environ["CLIENT_SECRET"],
+    redirect_uri=os.environ["REDIRECT_URI"],
+    redis_client=redis_client,
+)
+
+client.create_token(code=code)
+
+client.refresh_token()
 
 redis_client.keys()
 

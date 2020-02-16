@@ -112,15 +112,12 @@ def token_cache_(client_id, client_secret, redirect_uri, redis_client):
 
 
 @pytest.fixture(name="token_client", scope="function")
-def token_client_(client_id, client_secret, redirect_uri, redis_client):
+def token_client_(client_id, client_secret, redirect_uri):
     """
     make_token_client.
     """
     return TokenClient(
-        client_id=client_id,
-        client_secret=client_secret,
-        redirect_uri=redirect_uri,
-        redis_client=redis_client,
+        client_id=client_id, client_secret=client_secret, redirect_uri=redirect_uri
     )
 
 
@@ -172,7 +169,7 @@ def expires_at_(expires_in):
     return int(time.time()) + expires_in
 
 
-@pytest.fixture(name="token")
+@pytest.fixture(name="token", scope="function")
 def token_(access_token, token_type, refresh_token, expires_at):
     """
     token.
