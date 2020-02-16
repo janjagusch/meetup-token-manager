@@ -6,7 +6,6 @@ from meetup.token import Token
 
 
 class TestTokenClient:
-
     def _setup(redis_client):
         assert not redis_client.keys()
 
