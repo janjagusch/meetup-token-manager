@@ -1,0 +1,32 @@
+[tool.poetry]
+name = "meetup-token-cache"
+version = "0.1.0"
+description = "Easily obtain and cache OAuth 2.0 token from the Meetup API. Obtained tokens are stored both in memory and in Redis."
+authors = ["Jan-Benedikt Jagusch <jan.jagusch@gmail.com>"]
+repository = "https://github.com/janjagusch/meetup-token-cache"
+license = "MIT"
+packages = [
+	{include = "meetup"}
+]
+
+
+[tool.poetry.dependencies]
+python = "^3.7"
+redis = "^3.3"
+requests = "^2.22"
+
+[tool.poetry.dev-dependencies]
+black = {version="19.10b0", allow-prereleases=true}
+codecov = "^2.0"
+ipykernel = "^5"
+pylint = "^2"
+pytest = "^5"
+pytest-cov = "^2.8"
+pytest-vcr = "^1.0"
+python-dotenv = "^0.10.3"
+pyyaml = "^5.2"
+tox = "^3"
+
+[build-system]
+requires = ["poetry>=0.12"]
+build-backend = "poetry.masonry.api"

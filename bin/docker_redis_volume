@@ -1,0 +1,12 @@
+#!/usr/bin/env sh
+#
+# This script creates a Docker volume if it does not exist yet.
+
+
+if docker volume list -q | grep -q $1
+then
+	echo "$1 already exists."
+else
+	echo "creating $1."
+	docker volume create $1
+fi;
