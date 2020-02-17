@@ -17,10 +17,10 @@ def make_authorization_url(client_id, redirect_uri, scope=None):
         str: The url you need to visit to authorize the consumer.
 
     Raises:
-        KeyError: When providing invalid scopes.    
+        ValueError: When providing invalid scopes.
     """
     scope = set(scope or [])
-    VALID_SCOPES = [
+    valid_scopes = [
         "ageless",
         "basic",
         "event_management",
@@ -32,10 +32,10 @@ def make_authorization_url(client_id, redirect_uri, scope=None):
         "reporting",
         "rsvp",
     ]
-    if not scope.issubset(VALID_SCOPES):
-        raise ValueError(f"Scope '{scope}' is not a subset of '{_VALID_SCOPES}'")
+    if not scope.issubset(valid_scopes):
+        raise ValueError(f"Scope '{scope}' is not a subset of '{valid_scopes}'")
 
-    scope = "+".join(scope)
+    scope_str = "+".join(scope)
     response_type = "code"
 
     return (
@@ -43,5 +43,5 @@ def make_authorization_url(client_id, redirect_uri, scope=None):
         f"?client_id={client_id}"
         f"&redirect_uri={redirect_uri}"
         f"&response_type={response_type}"
-        f"&scope={scope}"
+        f"&scope={scope_str}"
     )
