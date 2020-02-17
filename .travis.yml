@@ -38,18 +38,7 @@ jobs:
         - poetry run codecov
     - stage: release
       script:
-        - echo Deploying to PyPI...
-
-before_release:
-  - bin/check_release
-  - poetry config http-basic.pypi $PYPI_USERNAME $PYPI_PASSWORD
-  - poetry build -f sdist
-
-release:
-  provider: script
-  script: poetry publish
-  skip_cleanup: true
-  on:
-    all_branches: true
-    condition: $TRAVIS_BUILD_STAGE_NAME = Deploy
-    tags: true
+        - bin/check_release
+        - poetry config http-basic.pypi $PYPI_USERNAME $PYPI_PASSWORD
+        - poetry build -f sdist
+        - poetry publish
