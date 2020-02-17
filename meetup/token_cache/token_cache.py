@@ -96,7 +96,9 @@ class TokenCache:
             Token: An instance of `Token`.
         """
         logging.info("Authorizing API client.")
-        self._token = self._token_client.create_token(code=code)
+        token = self._token_client.create_token(code=code)
+        self._cache_token(token)
+        self._token = token
         return self._token
 
     @property

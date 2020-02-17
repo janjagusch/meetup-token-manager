@@ -6,8 +6,8 @@ import time
 
 import pytest
 
-from meetup.exceptions import NoCachedTokenError
-from meetup.token import Token
+from meetup.token_cache.exceptions import NoCachedTokenError
+from meetup.token_cache.token import Token
 
 
 # pylint: disable=protected-access, pointless-statement

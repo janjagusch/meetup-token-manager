@@ -8,12 +8,12 @@ import os
 import time
 
 from dotenv import load_dotenv
-import pytest
 from redis import Redis
+import pytest
 
-from meetup import TokenCache
-from meetup.token import Token
-from meetup.token_client import TokenClient
+from meetup.token_cache.token import Token
+from meetup.token_cache.token_cache import TokenCache
+from meetup.token_cache.token_client import TokenClient
 
 
 load_dotenv()

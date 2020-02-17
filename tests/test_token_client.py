@@ -4,7 +4,7 @@ Tests for the `meetup.token_client` module.
 
 import pytest
 
-from meetup.token import Token
+from meetup.token_cache.token import Token
 
 
 class TestTokenClient:

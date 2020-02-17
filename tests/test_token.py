@@ -6,7 +6,7 @@ import time
 
 import pytest
 
-from meetup.token import Token
+from meetup.token_cache.token import Token
 
 
 @pytest.fixture(name="token_from_cache")
