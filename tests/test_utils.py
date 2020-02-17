@@ -9,11 +9,17 @@ from meetup.token_cache import utils
 
 @pytest.fixture(name="scopes")
 def scopes_():
+    """
+    scopes.
+    """
     return {}
 
 
 @pytest.fixture(name="invalid_scopes")
 def invalid_scopes_():
+    """
+    invalid_scopes.
+    """
     return {"admin"}
 
 
