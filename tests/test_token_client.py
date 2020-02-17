@@ -1,5 +1,5 @@
 """
-Tests for the `meetup.token_client` module.
+Tests for the `meetup.token_cache.token_client` module.
 """
 
 import pytest

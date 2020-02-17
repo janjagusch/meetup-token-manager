@@ -1,5 +1,5 @@
 """
-Tests for the meetup.token.Token class.
+Tests for the meetup.token_cache.token.Token class.
 """
 
 import time

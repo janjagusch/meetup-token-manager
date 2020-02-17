@@ -1,5 +1,5 @@
 """
-Tests for the `meetup.token_cache` module.
+Tests for the `meetup.token_cache.token_cache` module.
 """
 
 import time
