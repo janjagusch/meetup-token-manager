@@ -2,6 +2,7 @@
 Helper functions for the `.token_cache` package.
 """
 
+
 def make_authorization_url(client_id, redirect_uri, scope=None):
     """
     Generates an authorization url for the Meetup API.
