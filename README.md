@@ -1,4 +1,4 @@
-# meetup-token-cache
+# meetup-token-manager
 
 Manages 0Auth2 access token for the [Meetup API](https://secure.meetup.com/meetup_api) in memory and in [Redis](https://redis.io/). Refreshes expired tokens automatically.
 
