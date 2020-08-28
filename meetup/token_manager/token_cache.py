@@ -13,6 +13,9 @@ import redis
 from meetup.token_manager.token import Token
 
 
+_LOGGER = logging.getLogger(__name__)
+
+
 class TokenCache(abc.ABC):
     """
     Abstract token cache base class.
@@ -22,14 +25,14 @@ class TokenCache(abc.ABC):
         """
         Stores the token in the cache.
         """
-        logging.debug("Storing token.")
+        _LOGGER.debug("Storing token.")
         self._store_token(token.to_dict())
 
     def load_token(self) -> Token:
         """
         Loads the token from the cache.
         """
-        logging.debug("Loading token.")
+        _LOGGER.debug("Loading token.")
         return Token.from_dict(self._load_token())
 
     @abc.abstractmethod

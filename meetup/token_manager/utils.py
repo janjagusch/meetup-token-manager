@@ -4,10 +4,14 @@ Helper functions for the `.token_cache` package.
 
 import datetime
 import functools
+import logging
 
 import requests
 
 from meetup.token_manager.token import Token
+
+
+_LOGGER = logging.getLogger(__name__)
 
 
 def _add_expires_at(func):
@@ -42,6 +46,7 @@ def refresh_token(client_id, client_secret, refresh_token_):
     """
     Requests to refresh a token and returns a new token.
     """
+    _LOGGER.info("Refreshing token.")
     res = requests.post(
         "https://secure.meetup.com/oauth2/access",
         data={
@@ -105,6 +110,7 @@ def _request_token(client_id, client_secret, redirect_uri, code):
     """
     Requests a new token.
     """
+    _LOGGER.info("Requesting token.")
     res = requests.post(
         "https://secure.meetup.com/oauth2/access",
         data={
