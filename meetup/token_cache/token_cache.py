@@ -1,132 +1,110 @@
 """
-This module contains the TokenCache class.
+This module contains the token caches.
 """
 
+from typing import Dict
+import abc
+import json
 import logging
 
-from .token_client import TokenClient
-from .exceptions import NoCachedTokenError
-from .token import Token
+from google.cloud import storage
+import redis
+
+from meetup.token_cache.token import Token
 
 
-class TokenCache:
+class TokenCache(abc.ABC):
     """
-    TokenCache
-
-    Easily obtain and cache OAuth 2.0 token from the Meetup API.
-    Obtained tokens are stored both in memory and in Redis.
-
-    Args:
-        client_id (str): The client id
-        client_secret (str): The client secret
-        redirect_uri (str): The redirect uri
-        redis_client (redis.Redis): The Redis client
-
-    Attributes:
-        client_id (str): The client id
-        client_secret (str): The client secret
-        redirect_uri (str): The redirect uri
-        redis_client (redis.Redis): The Redis client
+    Abstract token cache base class.
     """
 
-    def __init__(self, client_id, client_secret, redirect_uri, redis_client):
-        self.client_id = client_id
-        self.client_secret = client_secret
-        self.redirect_uri = redirect_uri
-        self.redis_client = redis_client
+    def store_token(self, token: Token):
+        """
+        Stores the token in the cache.
+        """
+        logging.debug("Storing token.")
+        self._store_token(token.to_dict())
 
-        self._token_client = TokenClient(
-            client_id=self.client_id,
-            client_secret=self.client_secret,
-            redirect_uri=self.redirect_uri,
-        )
-        self._token = None
+    def load_token(self) -> Token:
+        """
+        Loads the token from the cache.
+        """
+        logging.debug("Loading token.")
+        return Token.from_dict(self._load_token())
+
+    @abc.abstractmethod
+    def _store_token(self, token: Dict):
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def _load_token(self) -> Dict:
+        raise NotImplementedError
+
+
+class TokenCacheRedis(TokenCache):
+    """
+    Stores and loads tokens in Redis.
+    """
+
+    def __init__(self, redis_client: redis.Redis, redis_key: str = "token"):
+        self._redis_client = redis_client
+        self._redis_key = redis_key
+
+    def _store_token(self, token):
+        self._redis_client.hmset(self._redis_key, token)
+
+    def _load_token(self):
+        return self._redis_client.hgetall(self._redis_key)
+
+
+class TokenCacheFile(TokenCache):
+    """
+    Stores and loads tokens from the filesystem.
+    """
+
+    def __init__(self, filepath: str = "token.json"):
+        self._filepath = filepath
+
+    def _store_token(self, token):
+        with open(self._filepath, mode="w") as file_pointer:
+            json.dump(token, file_pointer)
+
+    def _load_token(self):
+        with open(self._filepath, mode="r") as file_pointer:
+            return json.load(file_pointer)
+
+
+class TokenCacheGCS(TokenCache):
+    """
+    Stores and loads tokens from Google Cloud Storage.
+    """
+
+    def __init__(self, bucket_name: str, blob_name: str = "token.json"):
+        self._bucket_name = bucket_name
+        self._blob_name = blob_name
 
     @property
-    def _cache_key(self):
+    def bucket_name(self):
         """
-        Return the cache key for the configured client_id and redirect_uri.
-
-        Returns:
-            str: A cache key in the format
-                `oauth_token_cache__<client_id>`
+        bucket_name
         """
-        return f"oauth_token_cache__{self.client_id}"
-
-    def cached_token(self):
-        """
-        Try to retrieve a cached token from Redis.
-
-        Returns:
-            None: Returns `None` in case of a cache miss
-            Token: Returns a Token instance
-        """
-        logging.info("Retrieving token from Redis cache.")
-        cached_token = self.redis_client.hgetall(self._cache_key)
-
-        if not cached_token:
-            logging.warning("No cached token found.")
-            return None
-
-        return Token.from_cache(cached_token)
-
-    def _cache_token(self, token):
-        """
-        Persist a token in redis.
-
-        Args:
-            token (.token.Token): The token to persist.
-
-        Returns:
-            .token.Token: The persisted token.
-        """
-        logging.info("Persisting Token in Redis cache.")
-        self.redis_client.hmset(self._cache_key, token)
-
-        return token
-
-    def authorize(self, code):
-        """
-        Initial authorization to create first API token.
-
-        Args:
-            code (str): The authorization code.
-
-        Returns:
-            Token: An instance of `Token`.
-        """
-        logging.info("Authorizing API client.")
-        token = self._token_client.create_token(code=code)
-        self._cache_token(token)
-        self._token = token
-        return self._token
+        return self._bucket_name
 
     @property
-    def token(self):
+    def blob_name(self):
         """
-        Obtains a token.
-        First attempts to obtain token from memory. If no token found or token expired,
-        attempts to obtain token from Redis cache. If no token found, raises
-        `NoCachedTokenError`. If token expired, refreshes token. Replaces new token
-        with token in memory.
-
-        Returns:
-            Token: An instance of Token
-
-        Raises:
-            NoCachedTokenError: When there is no token in Redis to refresh with.
+        blob_name
         """
-        if not self._token or self._token.expired:
-            logging.debug("TokenCache._token has expired.")
-            token = self.cached_token()
-            if not token:
-                raise NoCachedTokenError(
-                    "There is no cached token. Please first run `self.authorize`."
-                )
-            if token.expired:
-                logging.debug("Token in Redis cache has expired.")
-                token = self._token_client.refresh_token(token.refresh_token)
-                self._cache_token(token)
-            self._token = token
+        return self._blob_name
 
-        return self._token
+    @property
+    def _blob(self):
+        client = storage.Client()
+        bucket = client.bucket(self.bucket_name)
+        return bucket.blob(self.blob_name)
+
+    def _load_token(self):
+        return json.loads(self._blob.download_as_string())
+
+    def _store_token(self, token):
+        self._blob.upload_from_string(json.dumps(token))

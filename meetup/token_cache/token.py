@@ -1,99 +1,83 @@
 """
-This module contains the Token class.
+This module contains the token class.
 """
 
-import time
+import datetime
 
 
-class Token(dict):
-
+class Token:
     """
-    An access token for the Meetup API.
-
-    Args:
-        access_token (str): The actual access token.
-        token_type (str): The token type.
-        refresh_token (str): The refresh token.
-        expires_at (int): The UNIX timestamp when the token expires.
+    OAuth 2 token for Meetup API.
     """
 
-    def __init__(self, *, access_token, token_type, refresh_token, expires_at):
-        super().__init__(self)
-        self["access_token"] = access_token
-        self["token_type"] = token_type
-        self["refresh_token"] = refresh_token
-        self["expires_at"] = expires_at
-
-    @classmethod
-    def from_api(cls, token_from_api):
-        """
-        Initializes a fresh token from the API.
-
-        Args:
-            token_from_api (dict): The token from the API.
-
-        Returns:
-            Token: An instance of Token.
-        """
-        token_from_api["expires_at"] = int(time.time()) + int(
-            token_from_api["expires_in"]
-        )
-        token_from_api.pop("expires_in")
-
-        return cls(**token_from_api)
-
-    @classmethod
-    def from_cache(cls, token_from_cache):
-        """
-        Initializes a cached token from Redis.
-
-        Args:
-            token_from_cache (dict): The cached token.
-
-        Returns:
-            Token: An instance of Token.
-        """
-        token_from_cache["expires_at"] = int(token_from_cache["expires_at"])
-        return cls(**token_from_cache)
+    def __init__(self, access_token, refresh_token, token_type, expires_in, expires_at):
+        self._access_token = access_token
+        self._refresh_token = refresh_token
+        self._token_type = token_type
+        self._expires_in = expires_in
+        self._expires_at = expires_at
 
     @property
     def access_token(self):
         """
-        The access token.
+        access_token
         """
-        return self["access_token"]
-
-    @property
-    def token_type(self):
-        """
-        The token type.
-        """
-        return self["token_type"]
+        return self._access_token
 
     @property
     def refresh_token(self):
         """
-        The refresh token.
+        refresh_token
         """
-        return self["refresh_token"]
+        return self._refresh_token
 
     @property
-    def expires_at(self):
+    def token_type(self):
         """
-        The expires at timestamp.
+        token_type
         """
-        return self["expires_at"]
+        return self._token_type
 
     @property
     def expires_in(self):
         """
-        The number of seconds until the token expires.
+        expires_in
         """
-        return int(self.expires_at - time.time())
+        return self._expires_in
+
+    @property
+    def expires_at(self):
+        """
+        expires_at
+        """
+        return self._expires_at
 
     @property
     def expired(self):
         """
-        Checks whether or not the access token has expired.
+        expired
         """
-        return self.expires_in <= 0
+        return datetime.datetime.now().timestamp() > self.expires_at
+
+    def to_dict(self):
+        """
+        Converts token to dictionary.
+        """
+        return {
+            "access_token": self.access_token,
+            "refresh_token": self.refresh_token,
+            "token_type": self.token_type,
+            "expires_in": self.expires_in,
+            "expires_at": self.expires_at,
+        }
+
+    @classmethod
+    def from_dict(cls, dict_):
+        """
+        Creates token from dictionary.
+        """
+        return cls(**dict_)
+
+    def __repr__(self):
+        attrs = ", ".join(f"{k}={v}" for k, v in self.to_dict().items())
+        return f"{self.__class__.__name__}({attrs})"
