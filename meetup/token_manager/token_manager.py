@@ -3,9 +3,9 @@ This module contains a token manager that stores, loads and refreshes tokens
 automatically.
 """
 
-from meetup.token_cache.token import Token
-from meetup.token_cache.token_cache import TokenCache
-from meetup.token_cache.utils import refresh_token
+from meetup.token_manager.token import Token
+from meetup.token_manager.token_cache import TokenCache
+from meetup.token_manager.utils import refresh_token
 
 
 class TokenManager:

@@ -10,7 +10,7 @@ import logging
 from google.cloud import storage
 import redis
 
-from meetup.token_cache.token import Token
+from meetup.token_manager.token import Token
 
 
 class TokenCache(abc.ABC):

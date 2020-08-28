@@ -7,7 +7,7 @@ import functools
 
 import requests
 
-from meetup.token_cache.token import Token
+from meetup.token_manager.token import Token
 
 
 def _add_expires_at(func):
