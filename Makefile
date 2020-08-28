@@ -38,7 +38,6 @@ lint_black: test_missing_init
 lint_pylint: test_missing_init
 	@echo "Pylint linting ..."
 	@poetry run pylint meetup
-	@poetry run pylint $$(find tests/ -iname "*.py")
 
 lint: lint_black lint_pylint clean
 
