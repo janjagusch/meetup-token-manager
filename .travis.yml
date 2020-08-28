@@ -4,7 +4,6 @@ dist: xenial
 
 stages:
   - lint
-  - test
   - name: release
     if: tag IS present
 
@@ -27,15 +26,6 @@ jobs:
     - stage: lint
       script:
         - make lint
-    - stage: test
-      services:
-        - redis-server
-      python:
-        - "3.7"
-        - "3.8"
-      script:
-        - poetry run pytest --cov=meetup --cov-report term-missing tests/
-        - poetry run codecov
     - stage: release
       script:
         - bin/check_release
