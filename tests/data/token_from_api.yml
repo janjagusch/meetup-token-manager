@@ -1,5 +1,0 @@
----
-access_token: XXX
-token_type: bearer
-refresh_token: YYY
-expires_in: 3600
