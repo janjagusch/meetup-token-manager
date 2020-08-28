@@ -1,9 +1,9 @@
 [tool.poetry]
-name = "meetup-token-cache"
+name = "meetup-token-manager"
 version = "0.2.0"
 description = "Easily obtain and cache OAuth 2.0 token from the Meetup API."
 authors = ["Jan-Benedikt Jagusch <jan.jagusch@gmail.com>"]
-repository = "https://github.com/janjagusch/meetup-token-cache"
+repository = "https://github.com/janjagusch/meetup-token-manager"
 license = "MIT"
 packages = [
 	{include = "meetup"}
