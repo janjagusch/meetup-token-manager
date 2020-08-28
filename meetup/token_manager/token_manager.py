@@ -6,6 +6,7 @@ automatically.
 from meetup.token_manager.token import Token
 from meetup.token_manager.token_cache import TokenCache
 from meetup.token_manager.utils import refresh_token
+from meetup.token_manager.exceptions import NoCachedToken
 
 
 class TokenManager:
@@ -31,7 +32,7 @@ class TokenManager:
         """
         token = self._token or self._token_cache.load_token()
         if not token:
-            raise Exception
+            raise NoCachedToken
         if token.expired or force_refresh:
             token = refresh_token(
                 self._client_id, self._client_secret, token.refresh_token
